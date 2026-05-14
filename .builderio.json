@@ -1,0 +1,15 @@
+{
+  "project": {
+    "name": "ConnectHub",
+    "description": "Premium Real-time Communication Platform",
+    "setupCommand": "npm install",
+    "devCommand": "npm start",
+    "buildCommand": "npm run build",
+    "npxCommand": "npm install --legacy-peer-deps"
+  },
+  "notes": {
+    "issue": "Angular version peer dependency conflict resolved",
+    "solution": ".npmrc configured with legacy-peer-deps=true",
+    "status": "READY FOR SETUP"
+  }
+}

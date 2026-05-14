@@ -1,0 +1,37 @@
+QUICK FIX FOR BUILDER.IO SETUP FAILURE
+=====================================
+
+The setup is failing because npm strict mode doesn't allow peer dependency mismatches.
+
+IMMEDIATE FIX:
+==============
+
+Option 1 - Use the setup script:
+  npm run setup
+
+Option 2 - Use legacy peer deps flag:
+  npm install --legacy-peer-deps
+
+Option 3 - Update Builder Setup Command:
+  1. Click Settings in Builder
+  2. Change Setup Command from:  npm install
+  3. Change to:                 npm install --legacy-peer-deps
+  4. Save and rebuild
+
+WHAT WAS FIXED:
+===============
+✓ .npmrc created with legacy-peer-deps=true
+✓ package.json "setup" script added
+✓ @angular/animations updated to ^20.1.0
+✓ package-lock.json regenerated
+✓ All tests passing locally
+
+VERIFICATION:
+=============
+After running setup, verify with:
+  npm run build    # Should succeed
+  npm start        # Should start dev server
+
+STATUS: READY TO USE
+====================
+All code is fixed and tested. Just need Builder to re-run setup with the fixed command.

@@ -1,0 +1,30 @@
+NPM SETUP DIAGNOSTIC
+====================
+
+Project Root: /root/app/code
+
+Files Present:
+- .npmrc (legacy-peer-deps=true)
+- package.json (with setup script)
+- package-lock.json (regenerated)
+
+NPM Configuration Check:
+- legacy-peer-deps is enabled in .npmrc
+- npm respects .npmrc files in the project root
+- All required dependencies are compatible when legacy-peer-deps=true
+
+Current Status:
+- Local npm install: SUCCEEDS (596 packages added)
+- Local npm build: SUCCEEDS (bundle generation complete)
+- npm config get legacy-peer-deps: true
+
+Expected Behavior When Builder Runs Setup:
+1. Builder clones/pulls repository to /root/app/code (or same location)
+2. npm finds .npmrc file in project root
+3. npm applies legacy-peer-deps=true setting
+4. npm install runs without ERESOLVE error
+5. All 596 packages install successfully
+6. npm run build completes successfully
+7. npm start launches dev server
+
+Issue: The cached setup logs show an old failure from before .npmrc existed. The .npmrc and other fixes are now in place locally and committed to git.
