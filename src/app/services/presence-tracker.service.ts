@@ -1,10 +1,11 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
+import { environment } from '../../environments/environment';
 
 @Injectable({ providedIn: 'root' })
 export class PresenceTrackerService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/v1/presence';
+  private readonly apiUrl = `${environment.apiBaseUrl}${environment.presence.baseUrl}`;
   private currentUserId?: string;
   private pingTimer?: number;
   private visibilityHandler?: () => void;
@@ -45,7 +46,7 @@ export class PresenceTrackerService {
   }
 
   private startPing(): void {
-    this.pingTimer = window.setInterval(() => this.ping(), 30000);
+    this.pingTimer = window.setInterval(() => this.ping(), environment.presence.pingInterval);
   }
 
   private bindBrowserEvents(): void {

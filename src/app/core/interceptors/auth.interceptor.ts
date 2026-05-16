@@ -2,6 +2,7 @@ import { HttpErrorResponse, HttpHandlerFn, HttpInterceptorFn, HttpRequest } from
 import { inject } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, switchMap, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import { AuthService } from '../services/auth.service';
 import { TokenStorageService } from '../services/token-storage.service';
 
@@ -22,7 +23,7 @@ export const authInterceptor: HttpInterceptorFn = (req: HttpRequest<unknown>, ne
     });
   };
 
-  const isBackendRequest = req.url.startsWith('http://localhost:8080') || req.url.startsWith('/api/');
+  const isBackendRequest = req.url.startsWith(environment.apiBaseUrl) || req.url.startsWith('/api/');
   if (
     isBackendRequest &&
     !req.url.includes('/api/v1/auth/refresh') &&

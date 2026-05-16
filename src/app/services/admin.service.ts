@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, catchError, forkJoin, map, of, switchMap } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface AdminDashboardAnalytics {
   totalUsers: number;
@@ -67,7 +68,7 @@ export interface AdminSubscriptionSummary {
 @Injectable({ providedIn: 'root' })
 export class AdminService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/v1';
+  private readonly apiUrl = `${environment.apiBaseUrl}${environment.admin.baseUrl}`;
 
   dashboardAnalytics(): Observable<AdminDashboardAnalytics> {
     return forkJoin({

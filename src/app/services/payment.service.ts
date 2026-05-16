@@ -1,6 +1,7 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, defer, finalize, firstValueFrom, map, switchMap, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
 
 export interface PaymentConfig {
   keyId: string;
@@ -54,7 +55,7 @@ declare global {
 @Injectable({ providedIn: 'root' })
 export class PaymentService {
   private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://localhost:8080/api/v1/payments/subscription';
+  private readonly apiUrl = `${environment.apiBaseUrl}${environment.payment.baseUrl}`;
   private scriptLoading?: Promise<void>;
   private checkoutInProgress = false;
 
@@ -194,7 +195,7 @@ export class PaymentService {
     }
     this.scriptLoading = new Promise((resolve, reject) => {
       const script = document.createElement('script');
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+      script.src = environment.payment.razorpay.checkoutUrl;
       script.async = true;
       script.onload = () => resolve();
       script.onerror = () => reject(new Error('Could not load Razorpay checkout'));

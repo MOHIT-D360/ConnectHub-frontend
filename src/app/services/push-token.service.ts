@@ -2,6 +2,7 @@ import { HttpClient } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { AuthService } from './auth.service';
 import { catchError, of, switchMap, tap } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { initializeApp } from 'firebase/app';
 import { getMessaging, getToken, isSupported } from 'firebase/messaging';
 
@@ -18,17 +19,10 @@ type FirebaseWebConfig = {
 export class PushTokenService {
   private readonly http = inject(HttpClient);
   private readonly auth = inject(AuthService);
-  private readonly apiUrl = 'http://localhost:8080';
+  private readonly apiUrl = `${environment.apiBaseUrl}${environment.notifications.baseUrl}`;
 
-  // TODO: Replace with your real Firebase config (prod-safe injection recommended).
-  private readonly firebaseConfig: FirebaseWebConfig = {
-    apiKey: '',
-    authDomain: '',
-    projectId: '',
-    messagingSenderId: '',
-    appId: '',
-    vapidKey: ''
-  };
+  // Firebase config from environment
+  private readonly firebaseConfig = environment.firebase;
 
   init(): void {
     // Only attempt for logged-in users.
@@ -87,7 +81,7 @@ export class PushTokenService {
         return token;
       }),
       switchMap(token => token
-        ? this.http.post(`${this.apiUrl}/api/v1/notifications/devices`, { token, platform: 'WEB' })
+        ? this.http.post(`${this.apiUrl}${environment.notifications.devicesEndpoint}`, { token, platform: 'WEB' })
         : of(null)
       ),
       tap(() => undefined),

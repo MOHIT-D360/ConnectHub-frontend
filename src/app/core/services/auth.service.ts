@@ -2,6 +2,7 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { catchError, finalize, map, Observable, of, switchMap, tap, throwError } from 'rxjs';
+import { environment } from '../../../environments/environment';
 import {
   ApiResponse,
   AuthResponse,
@@ -16,7 +17,8 @@ export class AuthService {
   private readonly http = inject(HttpClient);
   private readonly router = inject(Router);
   private readonly tokenStorage = inject(TokenStorageService);
-  private readonly apiUrl = 'http://localhost:8080';
+  private readonly apiUrl = environment.apiBaseUrl;
+  private readonly authBaseUrl = `${environment.apiBaseUrl}${environment.auth.baseUrl}`;
   private refreshInFlight?: Observable<AuthResponse>;
 
   private currentUserSignal = signal<User | null>(this.tokenStorage.user());
@@ -34,20 +36,20 @@ export class AuthService {
   }
 
   register(request: RegisterRequest): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/api/v1/auth/register`, request);
+    return this.http.post<void>(`${this.authBaseUrl}${environment.auth.endpoints.register}`, request);
   }
 
   verifyRegistrationOtp(email: string, otp: string): Observable<AuthResponse> {
-    return this.postAndStore('/api/v1/auth/verify-registration-otp', { email, otp });
+    return this.postAndStore(`${environment.auth.endpoints.login}/email/verify-otp`, { email, otp });
   }
 
   resendRegistrationOtp(email: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/api/v1/auth/resend-registration-otp`, { email });
+    return this.http.post<void>(`${this.authBaseUrl}/resend-registration-otp`, { email });
   }
 
   loginWithPassword(identifier: string, password: string): Observable<AuthResponse> {
     const key = identifier.includes('@') ? 'email' : 'username';
-    return this.postAndStore('/api/v1/auth/login', { [key]: identifier, password });
+    return this.postAndStore(environment.auth.endpoints.login, { [key]: identifier, password });
   }
 
   login(identifier: string, password: string): Promise<boolean> {
@@ -60,33 +62,33 @@ export class AuthService {
   }
 
   requestEmailOtp(email: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/api/v1/auth/login/email/request-otp`, { email });
+    return this.http.post<void>(`${this.authBaseUrl}${environment.auth.endpoints.login}/email/request-otp`, { email });
   }
 
   verifyEmailOtp(email: string, otp: string): Observable<AuthResponse> {
-    return this.postAndStore('/api/v1/auth/login/email/verify-otp', { email, otp });
+    return this.postAndStore(`${environment.auth.endpoints.login}/email/verify-otp`, { email, otp });
   }
 
   requestPhoneOtp(phoneNumber: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/api/v1/auth/login/phone/request-otp`, { phoneNumber });
+    return this.http.post<void>(`${this.authBaseUrl}${environment.auth.endpoints.login}/phone/request-otp`, { phoneNumber });
   }
 
   verifyPhoneOtp(phoneNumber: string, otp: string): Observable<AuthResponse> {
-    return this.postAndStore('/api/v1/auth/login/phone/verify-otp', { phoneNumber, otp });
+    return this.postAndStore(`${environment.auth.endpoints.login}/phone/verify-otp`, { phoneNumber, otp });
   }
 
   forgotPassword(email: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/api/v1/auth/forgot-password`, { email });
+    return this.http.post<void>(`${this.authBaseUrl}${environment.auth.endpoints.resetPassword}`, { email });
   }
 
   verifyResetOtp(email: string, otp: string): Observable<string> {
     return this.http
-      .post<ApiResponse<string> | string>(`${this.apiUrl}/api/v1/auth/verify-reset-otp`, { email, otp })
+      .post<ApiResponse<string> | string>(`${this.authBaseUrl}/verify-reset-otp`, { email, otp })
       .pipe(map(response => this.unwrapApiString(response)));
   }
 
   resetPassword(email: string, resetToken: string, newPassword: string): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/api/v1/auth/reset-password`, {
+    return this.http.post<void>(`${this.authBaseUrl}${environment.auth.endpoints.resetPassword}`, {
       email,
       resetToken,
       newPassword
@@ -98,15 +100,15 @@ export class AuthService {
   }
 
   handleOAuthCallback(provider: 'google' | 'github', request: OAuthCallbackRequest): Observable<AuthResponse> {
-    return this.postAndStore(`/api/v1/auth/oauth2/${provider}/callback`, request);
+    return this.postAndStore(`${environment.auth.endpoints.oauthCallback}/${provider}`, request);
   }
 
   loginAsGuest(): Observable<AuthResponse> {
-    return this.postAndStore('/api/v1/auth/guest', {});
+    return this.postAndStore('/guest', {});
   }
 
   logout(): Observable<void> {
-    return this.http.post<void>(`${this.apiUrl}/api/v1/auth/logout`, {}).pipe(
+    return this.http.post<void>(`${this.authBaseUrl}${environment.auth.endpoints.logout}`, {}).pipe(
       catchError(() => of(void 0)),
       finalize(() => {
         this.tokenStorage.clear();
@@ -127,7 +129,7 @@ export class AuthService {
     }
 
     this.refreshInFlight = this.http
-      .post<AuthResponse>(`${this.apiUrl}/api/v1/auth/refresh`, { refreshToken })
+      .post<AuthResponse>(`${this.authBaseUrl}${environment.auth.endpoints.refresh}`, { refreshToken })
       .pipe(
         tap(response => this.storeAuthResponse(response)),
         finalize(() => (this.refreshInFlight = undefined))
@@ -143,7 +145,7 @@ export class AuthService {
     }
 
     return this.http
-      .get(`${this.apiUrl}/api/v1/auth/validate`, { params: { token: accessToken } })
+      .get(`${this.authBaseUrl}${environment.auth.endpoints.verify}`, { params: { token: accessToken } })
       .pipe(
         map(() => true),
         catchError(() => of(false))
@@ -167,7 +169,7 @@ export class AuthService {
       return throwError(() => new Error('Missing user id'));
     }
 
-    return this.http.get<User | ApiResponse<User>>(`${this.apiUrl}/api/v1/auth/profile/${userId}`).pipe(
+    return this.http.get<User | ApiResponse<User>>(`${this.authBaseUrl}/profile/${userId}`).pipe(
       map(response => this.unwrapApiData(response)),
       tap(profile => {
         const user = this.tokenStorage.saveUser(profile as User);
@@ -182,7 +184,7 @@ export class AuthService {
       return throwError(() => new Error('Missing user id'));
     }
 
-    return this.http.put<User | ApiResponse<User>>(`${this.apiUrl}/api/v1/auth/profile/${userId}`, request).pipe(
+    return this.http.put<User | ApiResponse<User>>(`${this.authBaseUrl}/profile/${userId}`, request).pipe(
       map(response => this.unwrapApiData(response)),
       tap(profile => {
         const user = this.tokenStorage.saveUser(profile as User);
@@ -231,7 +233,7 @@ export class AuthService {
   }
 
   private postAndStore(path: string, body: unknown): Observable<AuthResponse> {
-    return this.http.post<AuthResponse>(`${this.apiUrl}${path}`, body).pipe(
+    return this.http.post<AuthResponse>(`${this.authBaseUrl}${path}`, body).pipe(
       tap(response => this.storeAuthResponse(response)),
       switchMap(response => this.fetchProfile(String(response.user.userId)).pipe(
         map(() => response),

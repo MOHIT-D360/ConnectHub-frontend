@@ -1,6 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { Observable, catchError, forkJoin, map, of, switchMap, tap, throwError } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 import { RealtimeService } from './realtime.service';
 
@@ -125,7 +126,7 @@ export class ChatService {
   private readonly http = inject(HttpClient);
   private readonly authService = inject(AuthService);
   private readonly realtimeService = inject(RealtimeService);
-  private readonly apiUrl = 'http://localhost:8080';
+  private readonly apiUrl = environment.apiBaseUrl;
 
   private readonly roomsSignal = signal<Room[]>([]);
   private readonly messagesSignal = signal<Map<string, Message[]>>(new Map());

@@ -1,5 +1,6 @@
 import { Injectable, NgZone, inject } from '@angular/core';
 import { Subject, timer } from 'rxjs';
+import { environment } from '../../environments/environment';
 import { AuthService } from './auth.service';
 
 export interface RealtimeEnvelope {
@@ -39,7 +40,8 @@ export class RealtimeService {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     this.connectRequested = true;
     this.zone.runOutsideAngular(() => {
-      this.socket = new WebSocket(`${protocol}//${window.location.hostname}:8080/ws/websocket`);
+      const wsUrl = `${environment.websocket.protocol}//${environment.websocket.host}:${environment.websocket.port}${environment.websocket.endpoint}`;
+      this.socket = new WebSocket(wsUrl);
       this.socket.onopen = () => this.sendConnect(token);
       this.socket.onmessage = event => this.handleRawMessage(String(event.data || ''));
       this.socket.onclose = () => this.handleClose();
