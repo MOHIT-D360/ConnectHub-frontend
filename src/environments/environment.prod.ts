@@ -5,7 +5,7 @@ export const environment = {
   production: true,
 
   // Backend API Configuration
-  apiBaseUrl: 'http://16.170.239.157:8080',
+  apiBaseUrl: 'https://api.connect-hub.dev',
   apiVersion: 'v1',
 
   // API Endpoints
@@ -34,8 +34,8 @@ export const environment = {
   // WebSocket Configuration
   websocket: {
     protocol: typeof window !== 'undefined' && window.location.protocol === 'https:' ? 'wss:' : 'ws:',
-    host: '16.170.239.157',
-    port: 8080,
+    host: 'api.connect-hub.dev',
+    port: 443,
     endpoint: '/ws/websocket'
   },
 
